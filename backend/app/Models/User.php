@@ -3,14 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes; // <--- 1. Importa SoftDeletes
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens; // 1. ASEGÚRATE DE QUE ESTA LÍNEA ESTÉ AQUÍ
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    // 2. AÑADE "HasApiTokens" JUSTO AQUÍ ADENTRO:
-    use HasApiTokens, HasFactory, Notifiable;
+    // 2. Añade SoftDeletes aquí adentro
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -43,4 +45,3 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 }
-

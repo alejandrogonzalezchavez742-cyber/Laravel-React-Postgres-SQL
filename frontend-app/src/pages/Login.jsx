@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import '../App.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // <-- 1. Importamos useNavigate
 import Header from '../components/Header';
 
 function App() {
@@ -14,6 +14,8 @@ function App() {
   // Estados para saber si hay un error específico en cada campo
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
+
+  const navigate = useNavigate(); // <-- 2. Inicializamos el navegador
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -28,13 +30,19 @@ function App() {
         { email, password }
       );
 
+      // Guardamos el JWT y el rol del usuario
       localStorage.setItem('token', response.data.access_token);
-      alert('¡Sesión iniciada con éxito!');
-      console.log('Usuario:', response.data.user);
+      localStorage.setItem('role', response.data.user.role);
+
+      // 3. Redirigimos según el rol
+      if (response.data.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/perfil');
+      }
 
     } catch (err) {
       if (err.response?.data?.message) {
-        // Activamos los bordes rojos para ambos campos ya que las credenciales fallaron
         setEmailError(true);
         setPasswordError(true);
         setError('El correo electrónico o la contraseña que ingresaste no son correctos.');
@@ -46,7 +54,8 @@ function App() {
     }
   };
 
-    return (
+
+  return (
     <>
       <Header />
       <main className="login-container" style={{ paddingTop: '80px' }}>
@@ -159,7 +168,7 @@ function App() {
           </div>
 
           <div className="login-footer">
-            <span>© 2026 Tu Aplicación</span>
+            <span>© 2026  Aplicación</span>
             <span>Acceso seguro</span>
           </div>
 
