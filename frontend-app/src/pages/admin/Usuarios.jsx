@@ -29,7 +29,7 @@ function Usuarios() {
   const cambiarRol = async (id, nuevoRol) => {
     try {
       await api.put(`/admin/usuarios/${id}/role`, { role: nuevoRol });
-      cargarUsuarios(); // Recarga la tabla actualizada
+      cargarUsuarios();
     } catch (err) {
       alert('Error al actualizar el rol del usuario.');
     }
@@ -46,8 +46,25 @@ function Usuarios() {
     }
   };
 
+  // Estilo de las barras grises animadas (Skeleton)
+  const skeletonBox = (width, height) => ({
+    width,
+    height,
+    backgroundColor: '#232836',
+    borderRadius: '6px',
+    animation: 'pulse 1.5s infinite ease-in-out',
+  });
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#0f1117', color: '#ffffff' }}>
+      {/* Animación CSS para el efecto de parpadeo suave */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+      `}</style>
+
       {/* Menú lateral administrativo */}
       <AdminSidebar />
 
@@ -61,7 +78,7 @@ function Usuarios() {
             </p>
           </div>
           <span style={{ background: '#1e222d', padding: '0.5rem 1rem', borderRadius: '8px', color: '#9387ff', fontWeight: '600' }}>
-            Total: {usuarios.length}
+            {loading ? 'Total: --' : `Total: ${usuarios.length}`}
           </span>
         </div>
 
@@ -71,22 +88,33 @@ function Usuarios() {
           </div>
         )}
 
-        {loading ? (
-          <p style={{ color: '#929bb1' }}>Cargando usuarios...</p>
-        ) : (
-          <div style={{ background: '#161922', borderRadius: '12px', border: '1px solid #2a2f3d', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: '#1e222d', borderBottom: '1px solid #2a2f3d', color: '#929bb1', fontSize: '14px' }}>
-                  <th style={{ padding: '1rem' }}>ID</th>
-                  <th style={{ padding: '1rem' }}>Nombre</th>
-                  <th style={{ padding: '1rem' }}>Correo</th>
-                  <th style={{ padding: '1rem' }}>Rol</th>
-                  <th style={{ padding: '1rem', textAlign: 'right' }}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {usuarios.map((usuario) => (
+        <div style={{ background: '#161922', borderRadius: '12px', border: '1px solid #2a2f3d', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ background: '#1e222d', borderBottom: '1px solid #2a2f3d', color: '#929bb1', fontSize: '14px' }}>
+                <th style={{ padding: '1rem' }}>ID</th>
+                <th style={{ padding: '1rem' }}>Nombre</th>
+                <th style={{ padding: '1rem' }}>Correo</th>
+                <th style={{ padding: '1rem' }}>Rol</th>
+                <th style={{ padding: '1rem', textAlign: 'right' }}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                // 4 filas fantasma con la misma estructura de la tabla
+                [1, 2, 3, 4].map((n) => (
+                  <tr key={n} style={{ borderBottom: '1px solid #2a2f3d' }}>
+                    <td style={{ padding: '1.1rem' }}><div style={skeletonBox('30px', '16px')} /></td>
+                    <td style={{ padding: '1.1rem' }}><div style={skeletonBox('150px', '16px')} /></td>
+                    <td style={{ padding: '1.1rem' }}><div style={skeletonBox('210px', '16px')} /></td>
+                    <td style={{ padding: '1.1rem' }}><div style={skeletonBox('130px', '30px')} /></td>
+                    <td style={{ padding: '1.1rem', textAlign: 'right' }}>
+                      <div style={{ ...skeletonBox('75px', '30px'), marginLeft: 'auto' }} />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                usuarios.map((usuario) => (
                   <tr key={usuario.id} style={{ borderBottom: '1px solid #2a2f3d' }}>
                     <td style={{ padding: '1rem', color: '#929bb1' }}>#{usuario.id}</td>
                     <td style={{ padding: '1rem', fontWeight: '500' }}>{usuario.name}</td>
@@ -126,11 +154,11 @@ function Usuarios() {
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </main>
     </div>
   );

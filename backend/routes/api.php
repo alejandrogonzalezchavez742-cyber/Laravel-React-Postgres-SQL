@@ -19,4 +19,5 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/usuarios', [UserController::class, 'index']);
     Route::put('/usuarios/{id}/role', [UserController::class, 'updateRole']);
     Route::delete('/usuarios/{id}', [UserController::class, 'destroy']);
+    Route::get('/stats', [UserController::class, 'stats']);
 });
