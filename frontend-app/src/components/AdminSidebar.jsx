@@ -56,7 +56,10 @@ function AdminSidebar() {
           <Link to="/admin/usuarios" style={linkStyle('/admin/usuarios')}>
             👥 Usuarios
           </Link>
-          {/* Aquí irás agregando futuros enlaces (ej. /admin/productos) */}
+          <Link to="/admin/productos" style={linkStyle('/admin/productos')}>
+            📦 Productos
+          </Link>
+
         </nav>
       </div>
 

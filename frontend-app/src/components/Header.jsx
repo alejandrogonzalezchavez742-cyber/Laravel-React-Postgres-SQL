@@ -71,7 +71,7 @@ function Header() {
           </>
         ) : (
           <>
-            <Link to="/" style={{ color: '#e2e8f0', textDecoration: 'none' }}>
+            <Link to="/login" style={{ color: '#e2e8f0', textDecoration: 'none' }}>
               Iniciar sesión
             </Link>
             <Link
