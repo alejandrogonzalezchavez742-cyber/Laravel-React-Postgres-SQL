@@ -1,90 +1,135 @@
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useCart } from '../context/CartContext';
+import '../styles/Header.css';
 
 function Header() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token'); // Lee el JWT guardado en tu Login o Registro
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+  const { totalItems } = useCart();
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const menuRef = useRef(null);
+
+  // Cierra el menú si haces clic fuera de él
+  useEffect(() => {
+    const handleClickFuera = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuAbierto(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickFuera);
+    return () => document.removeEventListener('mousedown', handleClickFuera);
+  }, []);
 
   const handleLogout = async () => {
     try {
       await axios.post(
         'http://localhost:8000/api/logout',
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Envía el JWT al backend para invalidarlo
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     } finally {
-      localStorage.removeItem('token'); // Borra el token del navegador
-      navigate('/'); // Te manda de vuelta al Login
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      setMenuAbierto(false);
+      navigate('/login');
     }
   };
 
   return (
-    <header
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        boxSizing: 'border-box',
-        zIndex: 1000,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '1rem 2.5rem',
-        backgroundColor: '#161922',
-        borderBottom: '1px solid #2a2f3d',
-        color: '#ffffff',
-      }}
-    >
-      <div style={{ fontWeight: 'bold', fontSize: '18px' }}>
-        <Link to="/" style={{ color: '#ffffff', textDecoration: 'none' }}>
+    <header className="main-header">
+      <div className="header-brand">
+        <Link to="/" className="header-brand-link">
           Mi Aplicación
         </Link>
       </div>
 
-      <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+      <nav className="header-nav">
+        <Link to="/carrito" className="header-cart-link">
+          🛒 Carrito ({totalItems})
+        </Link>
+
         {token ? (
-          <>
-            <Link to="/perfil" style={{ color: '#e2e8f0', textDecoration: 'none' }}>
-              Mi Perfil
-            </Link>
+          <div className="user-menu-container" ref={menuRef}>
+            {/* Ícono circular de usuario */}
             <button
-              onClick={handleLogout}
-              style={{
-                backgroundColor: '#ff5050',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '600',
-              }}
+              onClick={() => setMenuAbierto(!menuAbierto)}
+              className={`user-avatar-btn ${role === 'admin' ? 'admin-ring' : ''}`}
+              title="Opciones de cuenta"
             >
-              Cerrar sesión
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
             </button>
-          </>
+
+            {/* Menú desplegable */}
+            {menuAbierto && (
+              <div className="user-dropdown">
+                <div className="dropdown-header">
+                  <span className="role-badge">
+                    {role === 'admin' ? '🛡️ Administrador' : '👤 Cliente'}
+                  </span>
+                </div>
+
+                {/* Opciones especiales para ADMIN */}
+                {role === 'admin' && (
+                  <>
+                    <Link
+                      to="/admin"
+                      className="dropdown-item"
+                      onClick={() => setMenuAbierto(false)}
+                    >
+                      📊 Panel Administrativo
+                    </Link>
+                    <Link
+                      to="/admin/productos"
+                      className="dropdown-item"
+                      onClick={() => setMenuAbierto(false)}
+                    >
+                      📦 Gestionar Inventario
+                    </Link>
+                  </>
+                )}
+
+                {/* Opciones especiales para USUARIO NORMAL */}
+                {role !== 'admin' && (
+                  <Link
+                    to="/mis-pedidos"
+                    className="dropdown-item"
+                    onClick={() => setMenuAbierto(false)}
+                  >
+                    🛍️ Mis Compras
+                  </Link>
+                )}
+
+                {/* Configuración común para ambos */}
+                <Link
+                  to="/perfil"
+                  className="dropdown-item"
+                  onClick={() => setMenuAbierto(false)}
+                >
+                  ⚙️ Configuración de Cuenta
+                </Link>
+
+                <div className="dropdown-divider" />
+
+                <button onClick={handleLogout} className="dropdown-item logout-item">
+                  🚪 Cerrar sesión
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <>
-            <Link to="/login" style={{ color: '#e2e8f0', textDecoration: 'none' }}>
+            <Link to="/login" className="header-link">
               Iniciar sesión
             </Link>
-            <Link
-              to="/registro"
-              style={{
-                backgroundColor: '#9387ff',
-                color: '#000000',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                textDecoration: 'none',
-                fontWeight: '600',
-              }}
-            >
+            <Link to="/registro" className="header-btn-register">
               Registrarse
             </Link>
           </>
@@ -92,7 +137,6 @@ function Header() {
       </nav>
     </header>
   );
-
 }
 
 export default Header;

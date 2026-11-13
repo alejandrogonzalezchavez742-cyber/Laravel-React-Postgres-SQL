@@ -1,13 +1,38 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Header from '../components/Header';
+import { useCart } from '../context/CartContext';
+import '../styles/index/Fondo_buscador.css';
+import '../styles/index/MenuLateralCategorias.css';
+import '../styles/index/TarjetaProducto.css';
 
 function Index() {
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { agregarAlCarrito } = useCart();
+  const [busqueda, setBusqueda] = useState('');
+  const [categoriaActiva, setCategoriaActiva] = useState('Todas');
+  const [agregadoId, setAgregadoId] = useState(null);
+  const [menuAbierto, setMenuAbierto] = useState(false);
+
+  const categorias = ['Todas', ...new Set(productos.map((p) => p.categoria || 'General'))];
+
+  const productosFiltrados = productos.filter((prod) => {
+    const coincideTexto =
+      prod.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+      (prod.descripcion && prod.descripcion.toLowerCase().includes(busqueda.toLowerCase()));
+    const coincideCat =
+      categoriaActiva === 'Todas' || (prod.categoria || 'General') === categoriaActiva;
+    return coincideTexto && coincideCat;
+  });
+
+  const handleAgregar = (prod) => {
+    agregarAlCarrito(prod);
+    setAgregadoId(prod.id);
+    setTimeout(() => setAgregadoId(null), 900);
+  };
 
   useEffect(() => {
-    // URL completa apuntando a tu ruta pública de Laravel
     axios.get('http://localhost:8000/api/productos')
       .then((res) => setProductos(res.data))
       .catch((err) => console.error('Error al cargar el catálogo:', err))
@@ -15,99 +40,132 @@ function Index() {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', color: '#ffffff' }}>
-      {/* Barra de navegación pública */}
+    <div className="store-page">
       <Header />
 
-      {/* Sección de bienvenida */}
-      <section style={{ textAlign: 'center', padding: '110px 2rem 2rem', maxWidth: '800px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '36px', marginBottom: '0.8rem', color: '#ffffff' }}>
-          Bienvenido a Nuestra Tienda
-        </h1>
-        <p style={{ color: '#929bb1', fontSize: '16px', lineHeight: '1.5' }}>
-          Explora nuestro catálogo actualizado. Inicia sesión para gestionar tu cuenta o realizar pedidos.
-        </p>
-      </section>
+      <div className="top-controls-bar">
+        <section className="categorias">
+          {!loading && productos.length > 0 && (
+            <button
+              onClick={() => setMenuAbierto(true)}
+              className="btn-open-drawer"
+            >
+              ☰ Categorías <span className="active-cat-pill">{categoriaActiva}</span>
+            </button>
+          )}
+        </section>
 
-      {/* Catálogo público de productos */}
-      <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem' }}>
-        <h2 style={{ fontSize: '22px', marginBottom: '1.5rem', borderBottom: '1px solid #2a2f3d', paddingBottom: '0.5rem' }}>
-          Productos Disponibles
-        </h2>
+        <section className="store-hero">
+          <div className="search-wrapper">
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Buscar producto por nombre o descripción..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+          </div>
+        </section>
+      </div>
 
+
+      <main className="store-main">
+        {/* Botón en la orilla izquierda para abrir el menú desplegable */}
+
+        {/* Fondo oscuro al desplegar el menú */}
+        {menuAbierto && (
+          <div
+            className="drawer-overlay"
+            onClick={() => setMenuAbierto(false)}
+          />
+        )}
+
+        {/* Menú lateral desplegable de categorías */}
+        <aside className={`category-drawer ${menuAbierto ? 'open' : ''}`}>
+          <div className="drawer-header">
+            <h3>Categorías</h3>
+            <button
+              onClick={() => setMenuAbierto(false)}
+              className="btn-close-drawer"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="drawer-list">
+            {categorias.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setCategoriaActiva(cat);
+                  setMenuAbierto(false);
+                }}
+                className={`drawer-item ${categoriaActiva === cat ? 'active' : ''}`}
+              >
+                <span>{cat}</span>
+                {categoriaActiva === cat && <span>✓</span>}
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        {/* Listado de productos */}
         {loading ? (
-          <p style={{ color: '#929bb1' }}>Cargando productos...</p>
-        ) : productos.length === 0 ? (
-          <div style={{ background: '#161922', padding: '2rem', borderRadius: '12px', textAlign: 'center', border: '1px solid #2a2f3d' }}>
-            <p style={{ color: '#929bb1', margin: 0 }}>Aún no hay productos publicados en el catálogo.</p>
+          <p className="loading-text">Cargando catálogo...</p>
+        ) : productosFiltrados.length === 0 ? (
+          <div className="empty-state">
+            <p>No se encontraron productos que coincidan con tu búsqueda.</p>
           </div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-            gap: '1.5rem'
-          }}>
-            {productos.map((prod) => (
-              <div
-                key={prod.id}
-                style={{
-                  background: '#161922',
-                  border: '1px solid #2a2f3d',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between'
-                }}
-              >
-                {/* Imagen del producto desde Cloudinary */}
-                {prod.imagen_url ? (
-                  <img
-                    src={prod.imagen_url}
-                    alt={prod.nombre}
-                    style={{ width: '100%', height: '190px', objectFit: 'cover' }}
-                  />
-                ) : (
-                  <div style={{ width: '100%', height: '190px', background: '#1e222d', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#929bb1', fontSize: '14px' }}>
-                    Sin imagen disponible
-                  </div>
-                )}
+          <div className="products-grid">
+            {productosFiltrados.map((prod) => (
+              <article key={prod.id} className="product-card">
+                <div className="product-image-box">
+                  {prod.imagen_url ? (
+                    <img src={prod.imagen_url} alt={prod.nombre} className="product-img" />
+                  ) : (
+                    <div className="product-no-img">Sin imagen</div>
+                  )}
 
-                <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <span className="product-category-tag">
+                    {prod.categoria || 'General'}
+                  </span>
+                </div>
+
+                <div className="product-body">
                   <div>
-                    <span style={{
-                      fontSize: '12px',
-                      color: '#9387ff',
-                      background: 'rgba(147, 135, 255, 0.15)',
-                      padding: '0.25rem 0.6rem',
-                      borderRadius: '6px',
-                      fontWeight: '600'
-                    }}>
-                      {prod.categoria || 'General'}
-                    </span>
-                    <h3 style={{ margin: '0.9rem 0 0.4rem', fontSize: '18px' }}>{prod.nombre}</h3>
-                    <p style={{ color: '#929bb1', fontSize: '14px', lineHeight: '1.4' }}>
-                      {prod.descripcion || 'Sin descripción disponible.'}
+                    <h3 className="product-title">{prod.nombre}</h3>
+                    <p className="product-desc">
+                      {prod.descripcion || 'Artículo disponible en tienda.'}
                     </p>
                   </div>
 
-                  <div style={{
-                    marginTop: '1.5rem',
-                    paddingTop: '1rem',
-                    borderTop: '1px solid #2a2f3d',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#38bdf8' }}>
-                      ${Number(prod.precio).toFixed(2)}
-                    </span>
-                    <span style={{ fontSize: '12px', color: prod.stock > 0 ? '#4ade80' : '#ff6b6b' }}>
-                      {prod.stock > 0 ? `Stock: ${prod.stock}` : 'Agotado'}
-                    </span>
+                  <div className="product-footer">
+                    <div className="product-meta">
+                      <div>
+                        <span className="price-label">Precio</span>
+                        <span className="price-value">${Number(prod.precio).toFixed(2)}</span>
+                      </div>
+
+                      <span className={`stock-badge ${prod.stock > 0 ? 'in-stock' : 'out-stock'}`}>
+                        {prod.stock > 0 ? `${prod.stock} disponibles` : 'Agotado'}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => handleAgregar(prod)}
+                      disabled={prod.stock <= 0}
+                      className={`btn-cart ${agregadoId === prod.id ? 'added' : ''}`}
+                    >
+                      {agregadoId === prod.id
+                        ? '✓ ¡Agregado!'
+                        : prod.stock > 0
+                          ? '+ Agregar al carrito'
+                          : 'Sin stock'}
+                    </button>
                   </div>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         )}
