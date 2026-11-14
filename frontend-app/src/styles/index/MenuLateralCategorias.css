@@ -1,0 +1,130 @@
+.filter-bar-left {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1.8rem;
+}
+
+.btn-open-drawer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1.1rem;
+  border-radius: 10px;
+  border: 1px solid #2a2f3d;
+  background-color: #161922;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-open-drawer:hover {
+  border-color: #38bdf8;
+  background-color: #1c212e;
+}
+
+.active-cat-pill {
+  background-color: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  z-index: 1100;
+}
+
+.category-drawer {
+  position: fixed;
+  top: 0;
+  left: -290px;
+  width: 270px;
+  height: 100vh;
+  background-color: #13161f;
+  border-right: 1px solid #232836;
+  z-index: 1200;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transition: left 0.3s ease;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.category-drawer.open {
+  left: 0;
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #232836;
+}
+
+.drawer-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #f8fafc;
+}
+
+.btn-close-drawer {
+  background: #1e222d;
+  border: 1px solid #2a2f3d;
+  color: #94a3b8;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-close-drawer:hover {
+  color: #ffffff;
+  border-color: #38bdf8;
+}
+
+.drawer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  overflow-y: auto;
+}
+
+.drawer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.drawer-item:hover {
+  background-color: #1a1f2c;
+  color: #ffffff;
+}
+
+.drawer-item.active {
+  background-color: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+
